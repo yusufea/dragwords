@@ -52,6 +52,6 @@ export const gameRouter = router({
         chapter: true,
       },
     });
-    return chapters.map((chapter) => chapter.chapter);
+    return chapters.map((chapter) => chapter.chapter).reverse();
   }),
 });

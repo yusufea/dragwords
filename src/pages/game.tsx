@@ -13,6 +13,8 @@ import { arrayMove, insertAtIndex, removeAtIndex } from "../utils/array";
 import { trpc } from "@/utils/trpc";
 import DoneIcon from '@mui/icons-material/Done';
 import { useRouter } from "next/router";
+import { Modal } from "flowbite-react";
+import Link from "next/link";
 
 function Game() {
     const router = useRouter();
@@ -20,11 +22,16 @@ function Game() {
 
     const [time, setTime] = useState<{ hours: number, minutes: number, seconds: number }>({
         hours: 0,
-        minutes: 1,
-        seconds: 0
+        minutes: 0,
+        seconds: 15
     });
 
     const [backgroundColor, setBackgroundColor] = useState('bg-white');
+
+    const saveScore = (locale: any, chapter: string | string[] | undefined, score: number) => {
+        const key = `locale_${locale}_chapter_${chapter}`;
+        localStorage.setItem(key, score.toString());
+    };
 
     useEffect(() => {
         const countdown = setInterval(() => {
@@ -36,6 +43,9 @@ function Game() {
                 setTime(prevTime => ({ hours: prevTime.hours - 1, minutes: 59, seconds: 59 }));
             } else {
                 clearInterval(countdown);
+                setBackgroundColor('bg-white')
+                setOpenModal(true)
+                saveScore(locale, router.query.level, score)
             }
         }, 1000);
 
@@ -175,14 +185,23 @@ function Game() {
     };
 
     const [valueText, setValueText] = useState<any>("");
+
+    const calculateScore = (word: any) => {
+        return word.length * 10;
+    };
+
+    const [score, setScore] = useState(0);
+
     const handleButtonClick = () => {
-        console.log("asdasdasd")
         const group2Word = items.group2.join('').toLowerCase().replace(/i̇/g, 'i') || valueText;
         const matchingWord = words.find((word: any) => word.word === group2Word);
 
         words.forEach((word: any) => console.log(word.word, group2Word));
 
         if (matchingWord) {
+            const wordScore = calculateScore(group2Word);
+            setScore(prevScore => prevScore + wordScore);
+
             setTime(prevTime => {
                 let newSeconds = prevTime.seconds + 15;
                 let newMinutes = prevTime.minutes;
@@ -240,7 +259,7 @@ function Game() {
         return () => clearInterval(intervalId);
     }, [time]);
 
-    console.log(backgroundColor)
+    const [openModal, setOpenModal] = useState(false);
     return (
         <div className={`${backgroundColor} h-screen`} style={{ transition: 'background-color 0.5s ease' }}>
             <div className="flex justify-end p-5 max-md:p-3 max-md:py-5">
@@ -287,6 +306,21 @@ function Game() {
                     </button>
                 </div>
             </div>
+            <Modal show={openModal} onClose={() => setOpenModal(false)}>
+                <Modal.Body>
+                    <div className="space-y-6 font-medium text-lg">
+                        Tebrikler Puanın: {score}
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    {/* <Button onClick={() => setOpenModal(false)}>I accept</Button>
+                    <Button color="gray" onClick={() => setOpenModal(false)}>
+                        Decline
+                    </Button> */}
+                    <button onClick={() => router.reload()} className="text-center bg-green-400 rounded-full text-white px-6 py-4 w-full text-xl font-medium shadow-md">Yeniden Dene</button>
+                    <Link href={'/'} className="text-center bg-green-400 rounded-full text-white px-6 py-4 w-full text-xl font-medium shadow-md">Menü</Link>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 }
