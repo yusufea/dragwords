@@ -22,8 +22,8 @@ function Game() {
 
     const [time, setTime] = useState<{ hours: number, minutes: number, seconds: number }>({
         hours: 0,
-        minutes: 0,
-        seconds: 15
+        minutes: 1,
+        seconds: 0
     });
 
     const [backgroundColor, setBackgroundColor] = useState('bg-white');
